@@ -19,7 +19,7 @@ from platformio.public import PlatformBase
 
 IS_WINDOWS = sys.platform.startswith("win")
 
-class AriaUWBPlatform(PlatformBase):
+class AriauwbplatformioPlatform(PlatformBase):
 
     def get_boards(self, id_=None):
         result = super().get_boards(id_)
