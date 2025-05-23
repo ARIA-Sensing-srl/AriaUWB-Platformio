@@ -1,0 +1,31 @@
+{
+  "build": {
+    "f_cpu": "112000000L",
+    "extra_flags": "-DHWREV=0x00010001 -DCORE_CV -DPLATIO -DDEF_BOARD_MODEL=AHM2DL",
+    "hwids": [
+      [
+        "0xad30"
+      ]
+    ],
+    "mabi": "ilp32",
+    "march": "rv32imfc_xcorevhwlp1p0_xcorevmac1p0_xcorevmem1p0_xcorevalu1p0_xfhalf1p0_xcvbitmanip1p0_xcvbi1p0_xcvsimd1p0"
+  },
+  "debug": {
+    "onboard_tools": [
+      "ftdijtag"
+    ]
+  },
+  "frameworks": ["hydrogen-sdk"],
+  "name": "AHM boards",
+  "upload": {
+    "maximum_ram_size": 524288,
+    "maximum_size": 524288,
+    "protocol": "ftdijtag",
+    "protocols": [
+      "ftdijtag",
+      "openocd"
+    ]
+  },
+  "url": "https://ariasensing.com/",
+  "vendor": "AriaSensing"
+}
