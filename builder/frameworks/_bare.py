@@ -34,7 +34,7 @@ env.Append(
     CCFLAGS=machine_flags + [
         "-O1",
         "-fdata-sections",
-        "-ffunction-sections",
+        "-ffunction-sections"
     ],
     LINKFLAGS=machine_flags + [
         "-nostartfiles"

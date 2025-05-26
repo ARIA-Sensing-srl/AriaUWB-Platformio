@@ -45,15 +45,16 @@ env = DefaultEnvironment()
 platform = env.PioPlatform()
 board_config = env.BoardConfig()
 
+
 env.Replace(
-    AR="riscv-none-elf-gcc-ar",
-    AS="riscv-none-elf-as",
-    CC="riscv-none-elf-gcc",
-    GDB="riscv-none-elf-gdb",
-    CXX="riscv-none-elf-g++",
-    OBJCOPY="riscv-none-elf-objcopy",
-    RANLIB="riscv-none-elf-gcc-ranlib",
-    SIZETOOL="riscv-none-elf-size",
+    AR="riscv-none-embed-gcc-ar",
+    AS="riscv-none-embed-as",
+    CC="riscv-none-embed-gcc",
+    GDB="riscv-none-embed-gdb",
+    CXX="riscv-none-embed-g++",
+    OBJCOPY="riscv-none-embed-objcopy",
+    RANLIB="riscv-none-embed-gcc-ranlib",
+    SIZETOOL="riscv-none-embed-size",
     ARFLAGS=["rc"],
     PROGSUFFIX=".elf",
 )

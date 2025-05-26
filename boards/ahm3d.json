@@ -16,7 +16,7 @@
     ]
   },
   "frameworks": ["hydrogen-sdk"],
-  "name": "AHM boards",
+  "name": "AHM3D",
   "upload": {
     "maximum_ram_size": 524288,
     "maximum_size": 524288,
