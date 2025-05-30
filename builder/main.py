@@ -65,7 +65,7 @@ else:
         AR="riscv32-unknown-elf-gcc-ar.bat",
         AS="riscv32-unknown-elf-as.bat",
         CC="riscv32-unknown-elf-gcc.bat",
-        GDB="..\win_bin\riscv32-unknown-elf-gdb",
+        GDB="..\\win_bin\\riscv32-unknown-elf-gdb",
         CXX="riscv32-unknown-elf-g++.bat",
         OBJCOPY="riscv32-unknown-elf-objcopy.bat",
         RANLIB="riscv32-unknown-elf-gcc-ranlib.bat",
