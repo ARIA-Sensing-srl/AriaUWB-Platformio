@@ -8,7 +8,7 @@
       ]
     ],
     "mabi": "ilp32",
-    "march": "rv32imfc"
+    "march": "rv32imfc_xcorev_xfhalf"
   },
   "debug": {
     "onboard_tools": [

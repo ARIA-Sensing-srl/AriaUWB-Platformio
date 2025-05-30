@@ -67,10 +67,10 @@ env.BuildSources(
     join(FRAMEWORK_DIR, "comunication"),
 )
 
-#env.BuildSources(
-#    join("$BUILD_DIR", "comunication_SPIS"),
-#    join(FRAMEWORK_DIR, "comunication_SPIS"),
-#)
+env.BuildSources(
+    join("$BUILD_DIR", "comunication_SPIS"),
+    join(FRAMEWORK_DIR, "comunication_SPIS"),
+)
 
 env.BuildSources(
     join("$BUILD_DIR", "driverUser"),
@@ -87,33 +87,33 @@ env.BuildSources(
     join(FRAMEWORK_DIR, "ipc"),
 )
 
-#env.BuildSources(
-#    join("$BUILD_DIR", "processing"),
-#    join(FRAMEWORK_DIR, "processing"),
-#)
-
-#env.BuildSources(
-#    join("$BUILD_DIR", "reconstruction"),
-#    join(FRAMEWORK_DIR, "reconstruction"),
-#)
+env.BuildSources(
+    join("$BUILD_DIR", "processing"),
+    join(FRAMEWORK_DIR, "processing"),
+)
+env.BuildSources(
+    join("$BUILD_DIR", "reconstruction"),
+    join(FRAMEWORK_DIR, "reconstruction"),
+)
 
 env.BuildSources(
     join("$BUILD_DIR", "startup"),
     join(FRAMEWORK_DIR, "startup"),
 )
 
-#env.BuildSources(
-#    join("$BUILD_DIR", "utils"),
-#    join(FRAMEWORK_DIR, "utils"),
-#)
+env.BuildSources(
+    join("$BUILD_DIR", "utils"),
+    join(FRAMEWORK_DIR, "utils"),
+)
 
 env.Append(LIBPATH=[join(FRAMEWORK_DIR, "hal/libs")])
-env.Append(LIBPATH=[join(FRAMEWORK_DIR, "comunication_SPIS/libs")])
-env.Append(LIBPATH=[join(FRAMEWORK_DIR, "reconstruction/libs")])
-env.Append(LIBPATH=[join(FRAMEWORK_DIR, "utils/libs")])
-env.Append(LIBPATH=[join(FRAMEWORK_DIR, "processing/libs")])
+#env.Append(LIBPATH=[join(FRAMEWORK_DIR, "comunication_SPIS/libs")])
+#env.Append(LIBPATH=[join(FRAMEWORK_DIR, "reconstruction/libs")])
+#env.Append(LIBPATH=[join(FRAMEWORK_DIR, "utils/libs")])
+#env.Append(LIBPATH=[join(FRAMEWORK_DIR, "processing/libs")])
 
 # mandatory for compilation
-libs += ["hal_libs_cv32e40_priv_periph", "commSPIS", "reconstruction", "utils", "processing","m"]
+#libs += ["hal_libs_cv32e40_priv_periph", "commSPIS", "reconstruction", "utils", "processing","m"]
+libs += ["hal_libs_cv32e40_priv_periph","m"]
 
 env.Append(LIBS=libs)

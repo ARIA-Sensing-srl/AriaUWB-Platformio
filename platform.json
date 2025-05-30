@@ -33,10 +33,10 @@
       "owner": "AriaSensing",
       "version": "https://github.com/ARIA-Sensing-srl/ARIAUWB-pio-framework-hydrogen.git"
     },
-    "toolchain-riscv": {
+    "riscv-toolchain-pulp": {
       "type": "toolchain",
-      "owner": "platformio",
-      "version": "~1.80200.190731"
+      "owner": "ariasensing",
+      "version": "1.1.0"
     },
     "tool-openocd": {
       "optional": true,

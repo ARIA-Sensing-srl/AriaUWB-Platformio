@@ -15,6 +15,8 @@
 import sys
 import os
 
+IS_WINDOWS = sys.platform.startswith("win")
+
 from SCons.Script import (
     ARGUMENTS,
     COMMAND_LINE_TARGETS,
@@ -45,19 +47,32 @@ env = DefaultEnvironment()
 platform = env.PioPlatform()
 board_config = env.BoardConfig()
 
-
-env.Replace(
-    AR="riscv-none-embed-gcc-ar",
-    AS="riscv-none-embed-as",
-    CC="riscv-none-embed-gcc",
-    GDB="riscv-none-embed-gdb",
-    CXX="riscv-none-embed-g++",
-    OBJCOPY="riscv-none-embed-objcopy",
-    RANLIB="riscv-none-embed-gcc-ranlib",
-    SIZETOOL="riscv-none-embed-size",
-    ARFLAGS=["rc"],
-    PROGSUFFIX=".elf",
-)
+if IS_WINDOWS==False:
+    env.Replace(
+        AR="riscv32-unknown-elf-gcc-ar",
+        AS="riscv32-unknown-elf-as",
+        CC="riscv32-unknown-elf-gcc",
+        GDB="riscv32-unknown-elf-gdb",
+        CXX="riscv32-unknown-elf-g++",
+        OBJCOPY="riscv32-unknown-elf-objcopy",
+        RANLIB="riscv32-unknown-elf-gcc-ranlib",
+        SIZETOOL="riscv32-unknown-elf-size",
+        ARFLAGS=["rc"],
+        PROGSUFFIX=".elf",
+    )
+else:
+    env.Replace(
+        AR="riscv32-unknown-elf-gcc-ar.bat",
+        AS="riscv32-unknown-elf-as.bat",
+        CC="riscv32-unknown-elf-gcc.bat",
+        GDB="..\win_bin\riscv32-unknown-elf-gdb",
+        CXX="riscv32-unknown-elf-g++.bat",
+        OBJCOPY="riscv32-unknown-elf-objcopy.bat",
+        RANLIB="riscv32-unknown-elf-gcc-ranlib.bat",
+        SIZETOOL="riscv32-unknown-elf-size.bat",
+        ARFLAGS=["rc"],
+        PROGSUFFIX=".elf",
+    )
 
 
 

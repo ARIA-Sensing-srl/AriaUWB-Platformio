@@ -60,6 +60,8 @@ class AriauwbplatformioPlatform(PlatformBase):
                     "target extended-remote $DEBUG_PORT",
                     "$INIT_BREAK",
                     "$LOAD_CMDS",
+                    "set $mstatus=0x0",
+                    "set *((unsigned int*)0x1a104100) = 0",
                     "set $pc=0x1C000080"
                 ],
                 "server": {
