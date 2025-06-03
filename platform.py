@@ -44,40 +44,77 @@ class AriauwbplatformioPlatform(PlatformBase):
         for tool in tools:
             if tool in debug["tools"]:
                 continue
-            debug["tools"][tool] = {
-                "init_cmds": [
-                    "define pio_reset_halt_target",
-                    "   load",
-                    "   monitor reset halt",
-                    "end",
-                    "define pio_reset_run_target",
-                    "   load",
-                    "   monitor reset",
-                    "end",
-                    "set mem inaccessible-by-default off",
-                    "set arch riscv:rv32",
-                    "set remotetimeout 250",
-                    "target extended-remote $DEBUG_PORT",
-                    "$INIT_BREAK",
-                    "$LOAD_CMDS",
-                    "set $mstatus=0x0",
-                    "set *((unsigned int*)0x1a104100) = 0",
-                    "set $pc=0x1C000080"
-                ],
-                "server": {
-                    "package": "tool-openocd",
-                    "executable": "bin/openocd",
-                    "arguments": [
-                        "-s",
-                        os.path.join(self.get_dir(), "misc", "openocd"),
-                        "-s",
-                        "$PACKAGE_DIR/share/openocd/scripts",
-                        "-f",
-                        "openocd-1core.cfg",
-                    ]
-                },
-                "onboard": tool in debug.get("onboard_tools", []),
-            }
+            if IS_WINDOWS==False:
+                debug["tools"][tool] = {
+                    "init_cmds": [
+                        "define pio_reset_halt_target",
+                        "   load",
+                        "   monitor reset halt",
+                        "end",
+                        "define pio_reset_run_target",
+                        "   load",
+                        "   monitor reset",
+                        "end",
+                        "set mem inaccessible-by-default off",
+                        "set arch riscv:rv32",
+                        "set remotetimeout 250",
+                        "target extended-remote $DEBUG_PORT",
+                        "$INIT_BREAK",
+                        "$LOAD_CMDS",
+                        "set $mstatus=0x0",
+                        "set *((unsigned int*)0x1a104100) = 0",
+                        "set $pc=0x1C000080"
+                    ],
+                    "server": {
+                        "package": "tool-openocd",
+                        "executable": "bin/openocd",
+                        "arguments": [
+                            "-s",
+                            os.path.join(self.get_dir(), "misc", "openocd"),
+                            "-s",
+                            "$PACKAGE_DIR/share/openocd/scripts",
+                            "-f",
+                            "openocd-1core.cfg",
+                        ]
+                    },
+                    "onboard": tool in debug.get("onboard_tools", []),
+                }
+            else:
+                debug["tools"][tool] = {
+                    "init_cmds": [
+                        "define pio_reset_halt_target",
+                        "   load",
+                        "   monitor reset halt",
+                        "end",
+                        "define pio_reset_run_target",
+                        "   load",
+                        "   monitor reset",
+                        "end",
+                        "set mem inaccessible-by-default off",
+                        "set arch riscv:rv32",
+                        "set remotetimeout 250",
+                        "target extended-remote $DEBUG_PORT",
+                        "$INIT_BREAK",
+                        "$LOAD_CMDS",
+                        "set substitute-path /mnt/c C:"
+                        "set $mstatus=0x0",
+                        "set *((unsigned int*)0x1a104100) = 0",
+                        "set $pc=0x1C000080"
+                    ],
+                    "server": {
+                        "package": "tool-openocd",
+                        "executable": "bin/openocd",
+                        "arguments": [
+                            "-s",
+                            os.path.join(self.get_dir(), "misc", "openocd"),
+                            "-s",
+                            "$PACKAGE_DIR/share/openocd/scripts",
+                            "-f",
+                            "openocd-1core.cfg",
+                        ]
+                    },
+                    "onboard": tool in debug.get("onboard_tools", []),
+                }
 
         board.manifest["debug"] = debug
         return board

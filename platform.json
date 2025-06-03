@@ -1,7 +1,7 @@
 {
   "name": "AriaUWB-Platformio",
   "version": "1.0.0",
-  "title": "AruaUWB modules",
+  "title": "AriaUWB modules",
   "description": "Platformio support for ARIA modules",
   "homepage": "https://www.ariasensing.com/",
   "license": "Apache-2.0",
