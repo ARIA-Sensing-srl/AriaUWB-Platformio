@@ -12,7 +12,7 @@
 #define APP_H_
 #include "hydrogen_UD_v1.h"
 
-#define APP_SERIAL_BAUD (921600UL)
+#define DEF_APP_SERIAL_BAUD (921600UL)
 
 /**
  * Application entry point

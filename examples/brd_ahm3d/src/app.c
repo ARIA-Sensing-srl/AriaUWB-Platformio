@@ -44,6 +44,8 @@
 #define DEF_PPBUF1RDY_EVT_ID 	EVC_EVT_APBEVT3_ID
 /** @brief Inter-processor communication timeout */
 #define DEF_IPCIO_TOms 			500
+/** @brief time before change the baudrate */
+#define DEF_BAUDRATE_CHANGE_DELAYms	200
 /** @brief acquisition done flag */
 #define ACQ_FLAG_DONE 		0
 /** @brief buffer0 buffer ready flag */
@@ -293,6 +295,9 @@ typedef struct _ant_t{
 //** PRIVATE VARIABLES START **//
 
 static HydrUDriver_t * pprivDriver;
+static uint32_t APP_SERIAL_BAUD = DEF_APP_SERIAL_BAUD;
+static uint32_t app_new_baudrate = 0;
+static uint32_t app_new_baudrate_tick = 0;
 static uint8_t running=0;		//asserted when system is running
 static uint8_t stop_req = 0;	//asserted from communication interface request for stop
 static uint8_t start_req = 0;	//asserted from communication interface request for start
@@ -591,6 +596,7 @@ static int priv_comm_handling(HydrUDriver_t * , int interface);
 static int priv_update_range(HydrUDriver_t * , float min, float max);
 static int priv_update_sequence(HydrUDriver_t *, uint8_t * txSel, uint8_t * rxSel, int numSeq);
 static int priv_update_acquisition_data(HydrUDriver_t *);
+static int priv_update_system_pll(HydrUDriver_t *, uint32_t newFreq);
 static int priv_update_rec(HydrUDriver_t *);
 static int priv_free_acquisitions_buffers(HydrUDrv_acqHandler_t *);
 static int priv_streams_container_free();
@@ -610,6 +616,7 @@ static int priv_send_stream(uint8_t* pbuf, int size, bool isstart, bool isend, i
 static int priv_default_init();
 static int priv_flush_clutter_data();
 static bool priv_acqflag_check_clr(int acqFlag);	//check the flag status and reset
+static int priv_setPwrMode(HydrUDriver_t *, HydrUDrv_pwrsave_t);
 static int priv_elaborate_data(HydrUDriver_t *, HydrUDrv_acqHandler_t*);
 #if OPT_3D_MODE==0
 static void priv_canvas_struct_cplx2abs(recon_handler_t * , struct _canvas_struct_t *);
@@ -636,10 +643,6 @@ int app_entry(HydrUDriver_t* pdrv){
 #endif
 	if (DEF_PWRSAVE_MODE != HUPWR_OFF){
 		HydrUDrv_set_pwrSave(pdrv, DEF_PWRSAVE_MODE);
-		if (DEF_PWRSAVE_MODE != HUPWR_2)
-			lpMode = DEF_LPMODE_0;
-		else
-			lpMode = DEF_LPMODE_1;
 	}
 
 
@@ -674,6 +677,14 @@ int app_entry(HydrUDriver_t* pdrv){
 #if OPT_ENABLE_SSPI == 1
 		priv_comm_handling(pdrv, INTERFACE_ID_SPI);		//SPI message handler
 #endif
+		if (app_new_baudrate){
+			if (HAL_getElapsed(app_new_baudrate_tick) > DEF_BAUDRATE_CHANGE_DELAYms){
+				APP_SERIAL_BAUD = app_new_baudrate;
+				uart_deinit();
+				app_new_baudrate = 0;
+				uart_init(APP_SERIAL_BAUD); //reinit
+			}
+		}
 
 		//acquisition handling loop
 		if (running){
@@ -874,6 +885,20 @@ static int priv_elaborate_data(HydrUDriver_t *pdrv, HydrUDrv_acqHandler_t*pacqHa
 	}
 	return 0;
 }
+/**
+ * Update the power setting mode
+ * @param pdrv
+ * @param pwrMode
+ * @return 0
+ */
+int priv_setPwrMode(HydrUDriver_t * pdrv , HydrUDrv_pwrsave_t pwrMode){
+	HydrUDrv_set_pwrSave(pdrv, pwrMode);
+	if (pwrMode != HUPWR_2)
+		lpMode = DEF_LPMODE_0;
+	else
+		lpMode = DEF_LPMODE_1;
+	return 0;
+}
 
 /**
  * Private routine to set frame per second
@@ -885,6 +910,23 @@ static int priv_elaborate_data(HydrUDriver_t *pdrv, HydrUDrv_acqHandler_t*pacqHa
 static int priv_update_framerate(HydrUDriver_t* pdrv, int FPS){
 	if (HydrUDrv_set_framerate(pdrv, FPS))
 		return -1;
+	return 0;
+}
+
+/**
+ * Execute PLL frequency update and adjust UART setup accordingly
+ * @param pdrv
+ * @param newFreq
+ * @return
+ */
+__attribute__ ((optimize("-Os")))
+static int priv_update_system_pll(HydrUDriver_t * pdrv, uint32_t newFreq){
+	uart_rx_enable(false);
+	uart_deinit();
+	if (HAL_update_pll_frequency(pdrv, newFreq))
+		return -1;
+	uart_init(APP_SERIAL_BAUD);
+	uart_rx_enable(true);
 	return 0;
 }
 
@@ -959,6 +1001,10 @@ static int priv_default_init(){
 	if (HydrUDrv_set_carrier(pprivDriver, DEF_RADAR_CARRIER_MHZ))
 		return -1;
 	//set default bandwidth
+	if (DEF_RADAR_BW_MHZ > SYSTEM_MAXBW_DEF_PLL_MHz){
+		//bandwidth larger then SYSTEM_MAXBW_DEF_PLL_MHz require alternate frequency setting
+		priv_update_system_pll(pprivDriver, SYSTEM_PLL_FREQ_ALT_MHZ);
+	}
 	if (HydrUDrv_set_bandwidth(pprivDriver, DEF_RADAR_BW_MHZ))
 		return -1;
 	//set offset and range (follow the order, before offset, then range
@@ -1269,10 +1315,8 @@ static int priv_update_rec(HydrUDriver_t * pdrv){
 		rxselmask = acqChannelsList[i].rxmask;
 		txselmask = acqChannelsList[i].txmask;
 
-		/*asm volatile("p.cnt %0, %1" : "=r"(rxOnes) : "r"(rxselmask));
-		asm volatile("p.cnt %0, %1" : "=r"(txOnes) : "r"(txselmask));*/
-		rxOnes = utils_cnt_ones(rxselmask);
-		txOnes = utils_cnt_ones(txselmask);
+		asm volatile("p.cnt %0, %1" : "=r"(rxOnes) : "r"(rxselmask));
+		asm volatile("p.cnt %0, %1" : "=r"(txOnes) : "r"(txselmask));
 		if (rxOnes > 1 || txOnes > 1){
 			exe_reconstruction = false;
 		}
@@ -1296,10 +1340,8 @@ static int priv_update_rec(HydrUDriver_t * pdrv){
 		rxselmask = acqChannelsList[i].rxmask;
 		txselmask = acqChannelsList[i].txmask;
 		//use find first 1 instruciton (return position of the first bit set or 32 is input is 0)
-		/*asm volatile("p.ff1 %0, %1" : "=r"(txIndex) : "r" (txselmask));
-		asm volatile("p.ff1 %0, %1" : "=r"(rxIndex) : "r" (rxselmask));*/
-		txIndex = utils_findfirst_one(txselmask);
-		rxIndex = utils_findfirst_one(rxselmask);
+		asm volatile("p.ff1 %0, %1" : "=r"(txIndex) : "r" (txselmask));
+		asm volatile("p.ff1 %0, %1" : "=r"(rxIndex) : "r" (rxselmask));
 		if (txIndex > 3 || rxIndex > 3)
 			continue;
 		//both valid setup stream for reconstruction
@@ -1899,6 +1941,45 @@ int comm_cb_data_channel(radar_command UNUSED(cmd), radar_command_payload* ppayl
 		commch_req = ppayload->data_uint8 ;
 	}
 	ppayload->data_uint8 = commch_req;
+	return COMM_CB_SEND_REGULAR;
+}
+
+
+__attribute__ ((optimize("-Os")))
+int comm_cb_bwmode(radar_command UNUSED(cmd), radar_command_payload* ppayload, void * pars){
+	HydrUDriver_t * pdrv = ((comm_cb_args_t *)pars)->pdrv;
+	if (ppayload->data_uint8 == 0 || ppayload->data_uint8 == 1){
+		uint32_t newFreq = (ppayload->data_uint8==1) ? SYSTEM_PLL_FREQ_ALT_MHZ : SYSTEM_PLL_FREQ_MHZ;
+		if (priv_update_system_pll(pdrv, newFreq))
+			return COMM_CB_ERR_IO;
+	}
+	uint32_t pllFreqMHz = hal_clkmgh_get_pll_frequency_MHz();
+	if (pllFreqMHz>2000){
+		ppayload->data_uint8 = 1;
+	} else {
+		ppayload->data_uint8 = 0;
+	}
+	return COMM_CB_SEND_REGULAR;
+}
+
+__attribute__ ((optimize("-Os")))
+int comm_cb_pwrmode(radar_command UNUSED(cmd), radar_command_payload* ppayload, void * pars){
+	HydrUDriver_t * pdrv = ((comm_cb_args_t *)pars)->pdrv;
+	if (ppayload->data_uint8 != 0xFF){
+		priv_setPwrMode(pdrv, (HydrUDrv_pwrsave_t)ppayload->data_uint8);
+	}
+	ppayload->data_uint8 = (uint8_t)pdrv->pwrSaveMode;
+	return COMM_CB_SEND_REGULAR;
+}
+
+__attribute__ ((optimize("-Os")))
+int comm_cb_baudrate(radar_command UNUSED(cmd), radar_command_payload* ppayload, void * UNUSED(pars)){
+	if (ppayload->data_uint32 != 0xFFFFFFFF){
+		app_new_baudrate  = ppayload->data_uint32;
+		app_new_baudrate_tick = HAL_getSysTick();
+	}else{
+		ppayload->data_uint32 = APP_SERIAL_BAUD;
+	}
 	return COMM_CB_SEND_REGULAR;
 }
 
