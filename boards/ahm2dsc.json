@@ -4,7 +4,7 @@
     "extra_flags": "-DHWREV=0x00010001 -DCORE_CV -DPLATIO -DDEF_BOARD_MODEL=AHM2DSC",
     "hwids": [
       [
-        "0xad30"
+        "0xad22"
       ]
     ],
     "mabi": "ilp32",
