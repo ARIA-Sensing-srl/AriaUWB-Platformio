@@ -62,14 +62,14 @@ if IS_WINDOWS==False:
     )
 else:
     env.Replace(
-        AR="riscv32-unknown-elf-gcc-ar.bat",
-        AS="riscv32-unknown-elf-as.bat",
-        CC="riscv32-unknown-elf-gcc.bat",
-        GDB="riscv32-unknown-elf-gdb.exe",
-        CXX="riscv32-unknown-elf-g++.bat",
-        OBJCOPY="riscv32-unknown-elf-objcopy.bat",
-        RANLIB="riscv32-unknown-elf-gcc-ranlib.bat",
-        SIZETOOL="riscv32-unknown-elf-size.bat",
+        AR="riscv32-unknown-elf-gcc-ar.exe",
+        AS="riscv32-unknown-elf-as.exe",
+        CC="riscv32-unknown-elf-gcc.exe",
+        GDB="riscv32-unknown-elf-gdb.bat",
+        CXX="riscv32-unknown-elf-g++.exe",
+        OBJCOPY="riscv32-unknown-elf-objcopy.exe",
+        RANLIB="riscv32-unknown-elf-gcc-ranlib.exe",
+        SIZETOOL="riscv32-unknown-elf-size.exe",
         ARFLAGS=["rc"],
         PROGSUFFIX=".elf",
     )

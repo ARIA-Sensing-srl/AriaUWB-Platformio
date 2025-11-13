@@ -92,7 +92,6 @@ class AriauwbplatformioPlatform(PlatformBase):
                         "end",
                         "set mem inaccessible-by-default off",
                         "set arch riscv:rv32",
-                        "set substitute-path /mnt/c C:"
                         "set remotetimeout 250",
                         "target extended-remote $DEBUG_PORT",
                         "$INIT_BREAK",
